@@ -79,6 +79,8 @@ int main(int argv, char* argc[])
         }
         bool tmp;
         write(fd[1],&tmp,sizeof(bool));
+        close(fd[0]);
+        close(fd[1]);
     }
     return 0;
 }
