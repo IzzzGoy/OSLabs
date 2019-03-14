@@ -7,7 +7,6 @@
 #include <sys/shm.h>
 #include <ctime>
 
-
 int main(int argv, char* argc[])
 {
     srand(time(NULL));
@@ -41,7 +40,9 @@ int main(int argv, char* argc[])
             std::cout << mass[i] << std::endl;
         }
         write(fd[1],&memID,sizeof(int));
+        bool trigger = false;
         waitpid(i,0,0);
+        while(!read(fd[0],&trigger,sizeof(bool)));
         std::cout<<"#################################"<<std::endl;
 
         for(size_t i = 0; i < mem; i++)
@@ -52,9 +53,12 @@ int main(int argv, char* argc[])
         close(fd[0]);
         close(fd[1]);
         shmctl(memID, IPC_RMID, 0);
+
+
     }
     else
     {
+
 
         int I;
         read(fd[0],&I, 4);
@@ -71,8 +75,12 @@ int main(int argv, char* argc[])
                 }
 
             }
+
         }
+        bool tmp;
+        write(fd[1],&tmp,sizeof(bool));
     }
     return 0;
 }
+
 
