@@ -40,6 +40,8 @@ int main(int argv, char* argc[])
             std::cout << mass[i] << std::endl;
         }
         write(fd[1],&memID,sizeof(int));
+        bool trigger = false;
+        //waitpid(i,0,0);
         while(!read(fd[0],&trigger,sizeof(bool)));
         std::cout<<"#################################"<<std::endl;
 
