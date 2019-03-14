@@ -51,6 +51,7 @@ int main(int argv, char* argc[])
         std::cout<<"#################################"<<std::endl;
         close(fd[0]);
         close(fd[1]);
+        shmctl(memID, IPC_RMID, 0);
     }
     else
     {
