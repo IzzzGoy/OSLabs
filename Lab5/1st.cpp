@@ -19,81 +19,54 @@ int main(int argv, char* argc[])
     pid_t i = fork();
     if(i)
     {
-        if(mem == 0)
-        {
-            std::cout<<"All is bad!"<< std::endl;
-            return -1;
-        }
-        int memID = shmget(IPC_PRIVATE,sizeof(int)*mem, 0600|IPC_CREAT|IPC_EXCL);
-        if(memID <= 0)
-        {
-            std::cout<<"Memory not gotcha!" <<std::endl;
-            return -1;
-        }
-        int* mass = (int*)shmat(memID,0,0);
-        if(mass == NULL)
-        {
-            std::cout<<"Bad mass!"<<std::endl;
-        }
+        int* mass = new int[mem];
         std::cout<<"#################################"<<std::endl;
         for(size_t i = 0; i < mem; i++)
         {
             mass[i] = rand()%1000;
             std::cout << mass[i] << std::endl;
         }
-        write(fd[1],&memID,sizeof(int));
-        int trigger = 0;
-        while(!read(dh[0],&trigger,sizeof(int)));
+        write(fd[1],mass,sizeof(int)*mem);
+        while(!read(dh[0],mass,sizeof(int)*mem));
+        std::cout<<"#################################"<<std::endl;
+
+        for(size_t i = 0; i < mem; i++)
         {
-            if(trigger == 1)
-            {
-
-                std::cout<<"#################################"<<std::endl;
-
-                for(size_t i = 0; i < mem; i++)
-                {
-                    std::cout << mass[i] << std::endl;
-                }
-                std::cout<<"#################################"<<std::endl;
-                close(fd[0]);
-                close(fd[1]);
-                shmctl(memID, IPC_RMID, 0);
-
-                return 0;
-            }
-
+            std::cout << mass[i] << std::endl;
         }
+        std::cout<<"#################################"<<std::endl;
+        close(fd[0]);
+        close(fd[1]);
+        delete[] mass;
+        return 0;
+
+
     }
     else
     {
-        int I;
-        read(fd[0],&I, 4);
-        int* arr = (int*)shmat(I,0,0);
-       
-
-        for(size_t j = 0; j < mem; j++)
+        int* arr = new int;
+        read(fd[0],arr, sizeof(int)*mem);
+        for(int i = 1; i < mem; ++i)
         {
-
-           
-            for(size_t i = 0; i < mem - 1; i++)
+            for(int r = 0; r < mem-i; r++)
             {
-              
-                if(arr[i] < arr[i+1])
+                if(arr[r] < arr[r+1])
                 {
-                    int a = arr[i];
-                    arr[i] = arr[i+1];
-                    arr[i + 1] = a;
+                    int temp = arr[r];
+                    arr[r] = arr[r+1];
+                    arr[r+1] = temp;
                 }
-
             }
         }
-        int tmp = 1;
-        write(dh[1],&tmp,sizeof(int));
+        write(dh[1],arr,sizeof(int)*mem);
+
         close(dh[0]);
         close(dh[1]);
+        delete[] arr;
     }
     return 0;
 }
+
 
 
 
