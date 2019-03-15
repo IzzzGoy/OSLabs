@@ -13,7 +13,9 @@ int main(int argv, char* argc[])
     char* temp = argc[1];
     int mem = atoi(temp);
     int fd[2];
+    int dh[2];
     pipe(fd);
+    pipe(dh);
     pid_t i = fork();
     if(i)
     {
@@ -40,33 +42,42 @@ int main(int argv, char* argc[])
             std::cout << mass[i] << std::endl;
         }
         write(fd[1],&memID,sizeof(int));
-        bool trigger = false;
-        //waitpid(i,0,0);
-        while(!read(fd[0],&trigger,sizeof(bool)));
-        std::cout<<"#################################"<<std::endl;
-
-        for(size_t i = 0; i < mem; i++)
+        int trigger = 0;
+        while(!read(dh[0],&trigger,sizeof(int)));
         {
-            std::cout << mass[i] << std::endl;
+            if(trigger == 1)
+            {
+
+                std::cout<<"#################################"<<std::endl;
+
+                for(size_t i = 0; i < mem; i++)
+                {
+                    std::cout << mass[i] << std::endl;
+                }
+                std::cout<<"#################################"<<std::endl;
+                close(fd[0]);
+                close(fd[1]);
+                shmctl(memID, IPC_RMID, 0);
+
+                return 0;
+            }
+
         }
-        std::cout<<"#################################"<<std::endl;
-        close(fd[0]);
-        close(fd[1]);
-        shmctl(memID, IPC_RMID, 0);
-
-
     }
     else
     {
-
-
         int I;
         read(fd[0],&I, 4);
         int* arr = (int*)shmat(I,0,0);
+       
+
         for(size_t j = 0; j < mem; j++)
         {
+
+           
             for(size_t i = 0; i < mem - 1; i++)
             {
+              
                 if(arr[i] < arr[i+1])
                 {
                     int a = arr[i];
@@ -75,14 +86,14 @@ int main(int argv, char* argc[])
                 }
 
             }
-
         }
-        bool tmp;
-        write(fd[1],&tmp,sizeof(bool));
-        close(fd[0]);
-        close(fd[1]);
+        int tmp = 1;
+        write(dh[1],&tmp,sizeof(int));
+        close(dh[0]);
+        close(dh[1]);
     }
     return 0;
 }
+
 
 
